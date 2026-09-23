@@ -1,0 +1,39 @@
+// This is your Prisma schema file.
+// Learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  // DATABASE_URL uses Supabase's connection pooler (PgBouncer) for runtime queries.
+  url       = env("DATABASE_URL")
+  // DIRECT_URL bypasses the pooler — required for `prisma migrate dev/deploy`.
+  directUrl = env("DIRECT_URL")
+}
+
+model Card {
+  /// Primary key — format: "UMKM-001-A7X9" (sequential number + 4 random alphanumeric chars)
+  id_kartu      String   @id
+
+  /// Display name of the business (e.g. "Warung Makan Bu Siti")
+  business_name String?
+
+  /// Google Maps Place ID — used to generate the review URL
+  place_id      String?
+
+  /// The final redirect URL: https://search.google.com/local/writereview?placeid=[place_id]
+  redirect_url  String?
+
+  /// bcrypt-hashed PIN/password so only the owner can edit their card
+  password_hash String?
+
+  /// Whether the card has been activated by an UMKM owner
+  is_active     Boolean  @default(false)
+
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  @@map("cards")
+}
