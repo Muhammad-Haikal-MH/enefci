@@ -96,25 +96,30 @@ export async function POST(req: NextRequest) {
     const id_kartu = generateCardId(startIndex + i);
     const scan_url = buildCardUrl(id_kartu);
 
-    // Generate QR code as a buffer (PNG, 300x300)
+    // Generate QR code as a buffer
     const qrBuffer = await QRCode.toBuffer(scan_url, {
       errorCorrectionLevel: "H",
-      width: 300,
-      margin: 2,
+      width: 400,
+      margin: 1, // smaller margin to fit well
       color: {
         dark: "#000000",
         light: "#FFFFFF",
       },
     });
 
+    // Resize the QR code to exactly cover the drawn guideline box (395x372)
+    // A slight stretch is used but it remains perfectly scannable.
+    const resizedQrBuffer = await sharp(qrBuffer)
+      .resize(395, 372, { fit: "fill" })
+      .toBuffer();
+
     // Composite QR code onto template
-    // We assume the QR goes on the left side. Adjust left/top values as needed for your specific design!
     const compositedBuffer = await sharp(templateBuffer)
       .composite([
         {
-          input: qrBuffer,
-          top: 100, // Adjust Y coordinate based on template
-          left: 100, // Adjust X coordinate based on template
+          input: resizedQrBuffer,
+          top: 190,
+          left: 66,
         },
       ])
       .jpeg()
